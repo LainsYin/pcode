@@ -1,0 +1,19 @@
+.db.py.un~
+.DS_Store
+.idea
+.mysql01.py.un~
+2015-11-16 19-24-20_db.txt
+2015-11-16 19-26-06_db.txt
+cn.py
+db.py
+db.py~
+db_compare.py
+db_compare.txt
+db_sqlalchemy.py
+getFileDir.py
+main.py
+main.pyc
+mediainfo.txt
+names.txt
+resmv_compare.py
+unittest.py

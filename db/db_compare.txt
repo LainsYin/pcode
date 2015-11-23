@@ -1,0 +1,7 @@
+database:::yiqiding_ktv  tables::media  filed:start_volume_1  
+database:::yiqiding_ktv  tables::media  filed:start_volume_2  
+database:::yiqiding_ktv  tables::publicsong_ip  
+database:::yiqiding_ktv  tables::publicsong_list  
+database:::yiqiding_ktv  tables::publicsong_list_copy  
+database:::yqcchaindb  tables::v_totalbill  filed:TotalBill_Comments  
+database:::yqcdb  
