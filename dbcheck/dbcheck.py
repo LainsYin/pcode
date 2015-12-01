@@ -2,6 +2,7 @@
 # -*-coding:utf-8 -*-
 __author__ = 'yin'
 import json
+import sys
 from sqlalchemy import *
 from sqlalchemy.orm import sessionmaker
 import logging
@@ -30,7 +31,7 @@ class DbCheck:
         for fil in field_check:
             if len(fil) >= 1:
                 if fil not in field:
-                    self.write_file(db_name=db, table_name=table, field_name=filed[0])
+                    self.write_file(db_name=db, table_name=table, field_name=fil[0], err_str=" Field not exsitent ")
 
     def compare_tables(self, db):
         try:
@@ -47,39 +48,45 @@ class DbCheck:
             if tables in list_dst:
                 self.compare_field(tables[0], db)
             else:
-                self.write_file(db_name=db, table_name=tables[0])
+                self.write_file(db_name=db, table_name=tables[0], err_str=" Table not exsitent ")
 
     def compare_db(self):
         lists_check = []
-        if self.db is not None:
-            lists_check.append(self.db)
-        else:
-            for lists in self.session_check.execute("SHOW  DATABASES;").fetchall():
-                lists_check.append(lists[0])
-
-        database_list = ['yiqiding', 'yiqiding_ktv', 'yiqiding_info', 'yqcchaindb', 'yqcdb']
+        database_list = []
+        try:
+            if self.db is not None:
+                lists_check.append(self.db)
+                database_list.append(self.db)
+            else:
+                database_list = ['yiqiding', 'yiqiding_ktv', 'yiqiding_info', 'yqcchaindb', 'yqcdb']
+                for lists in self.session_check.execute("SHOW  DATABASES;").fetchall():
+                    lists_check.append(lists[0])
+        except Exception, e:
+            err_str = ' %s ' % e
+            self.write_file(err_str=err_str)
+            return
 
         for data in database_list:
             if data not in lists_check:
-                self.write_file(db_name=data, err_str=" not exsit ")
+                self.write_file(db_name=data, err_str=" Db not exsitent ")
             else:
                 self.compare_tables(data)
 
-    def write_file(self, db_name, table_name=None, field_name=None, err_str=None):
+    def write_file(self, db_name=None, table_name=None, field_name=None, err_str=None):
         w_str = {}
         if err_str is not None:
             w_str["err"] = err_str
-        else:
-            if db_name is not None:
-                w_str["db"] = db_name
-            if table_name is not None:
-                w_str["table"] = table_name
-            if field_name is not None:
-                w_str["field"] = field_name
+        if db_name is not None:
+            w_str["db"] = db_name
+        if table_name is not None:
+            w_str["table"] = table_name
+        if field_name is not None:
+            w_str["field"] = field_name
+
         if self.is_json:
-            logging.debug(json.dumps(w_str, indent=4))
+            logging.info(json.dumps(w_str, indent=4))
         else:
-            logging.debug(w_str)
+            logging.info(w_str)
 
 
 def init_log(log_name):
@@ -102,11 +109,11 @@ def res_option():
 
     parser.add_option("--chost", dest="chost", default="127.0.0.1", help="specify check db host")
     parser.add_option("--cport", dest="cport", type="int", default=3306, help="specify check db port")
-    parser.add_option("--cuser", dest="cuser", default="yqc", help="specify check db user")
+    parser.add_option("--cuser", dest="cuser", default="sdfsf", help="specify check db user")
     parser.add_option("--cpwd", dest="cpassword", default="yqc2014", help="specify check db pwd")
 
     parser.add_option("-d", "--db", dest="db", default=None, help="specify check db")
-    parser.add_option("-l", "--log", dest="log_name", default="res.txt", help="log file name")
+    parser.add_option("-l", "--log", dest="log_name", default="db.txt", help="log file name")
     parser.add_option("-j", "--json", dest="json", default=False, help="output json  False/True")
 
     (options, args) = parser.parse_args()
@@ -118,19 +125,14 @@ def main():
     init_log(opt.log_name)
     db_connect_check = 'mysql+mysqldb://%s:%s@%s:%s/yiqiding_ktv?charset=utf8' % \
                        (opt.cuser, opt.cpassword, opt.chost, opt.cport)
-    db_connect = 'mysql+mysqldb://%s:%s@%s/yiqiding_ktv?charset=utf8' % \
+    db_connect = 'mysql+mysqldb://%s:%s@%s:%s/yiqiding_ktv?charset=utf8' % \
                  (opt.user, opt.password, opt.host, opt.port)
 
-    try:
-        engine_check = create_engine(db_connect_check)
-        engine_des = create_engine(db_connect)
-        session_check = sessionmaker(bind=engine_check)
-        session = sessionmaker(bind=engine_des)
-    except Exception, e:
-        logging.debug(e)
-        return
-
-    db = DbCheck(session_check, session, opt.db, opt.json)
+    engine_check = create_engine(db_connect_check)
+    engine_des = create_engine(db_connect)
+    session_check = sessionmaker(bind=engine_check)
+    session = sessionmaker(bind=engine_des)
+    db = DbCheck(session_check(), session(), opt.db, opt.json)
     db.compare_db()
 
 

@@ -40,18 +40,18 @@ class ResCheck:
                         lines.append(data)
                     json_list.append(lines)
                 json_list.insert(0, err_type)
-            logging.debug(json.dumps(json_list, indent=4))
+            logging.info(json.dumps(json_list, indent=4))
         else:
             if err_type == 'fm' or err_type == 'actor':
                 for line_err in err_lists:
-                    logging.debug(line_err)
+                    logging.info(line_err)
             else:
                 for line_err in err_lists:
                     err_str = ''
                     for err in line_err:
                         err_str += str(err)
                         err_str += '   '
-                    logging.debug(err_str)
+                    logging.info(err_str)
 
     def get_file_list(self, dir_path, file_type):
         self = dir_path + '/*' + file_type
@@ -251,9 +251,9 @@ def init_log(log_name):
 
 def res_option():
     parser = OptionParser()
-    parser.add_option("--host", dest="host", default="127.0.0.1", help="specify db host")
+    parser.add_option("--host", dest="host", default="192.168.1.199", help="specify db host")
     parser.add_option("--port", dest="port", type="int", default=3306, help="specify db port")
-    parser.add_option("--dir", dest="dir", default="/Users/yin/Desktop/yin/", help="res directory")
+    parser.add_option("--dir", dest="dir", default="/var/www/", help="res directory")
     parser.add_option("-u", "--user", dest="user", default="yqc", help="specify db user")
     parser.add_option("-p", "--pwd", dest="password", default="yqc2014", help="specify db user")
     parser.add_option("-d", "--db", dest="db", default="yiqiding_ktv", help="specify db database")

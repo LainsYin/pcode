@@ -1,0 +1,1 @@
+INFO:root:{'err': ' (OperationalError) (1045, "Access denied for user \'sdfsf\'@\'localhost\' (using password: YES)") None None '}
