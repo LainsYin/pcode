@@ -1,0 +1,4 @@
+Sat, 28 Nov 2015 11:50:45 log.py[line:14] WARNING this is warning
+Sat, 28 Nov 2015 11:50:45 log.py[line:15] INFO this is info
+Sat, 28 Nov 2015 11:55:55 log.py[line:21] WARNING this is warning
+Sat, 28 Nov 2015 11:55:55 log.py[line:22] INFO this is info

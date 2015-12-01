@@ -16,6 +16,9 @@ import log
 from models.dao import Dao
 from models.config import Config
 from controller.media_controller import MediaController
+from controller.actor_controller import ActorController
+from controller.actor_nation_controller import ActorNationController
+from controller.actor_sex_controller import ActorSexController
 from controller.hello import Hello
 
 __author__ = 'TT'
@@ -27,6 +30,9 @@ class Application(tornado.web.Application):
         urls = [
             (Hello.url, Hello),
             (MediaController.url, MediaController),
+            (ActorController.url, ActorController),
+            (ActorNationController.url, ActorNationController),
+            (ActorSexController.url, ActorSexController)
         ]
 
         settings = dict(

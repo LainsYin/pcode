@@ -26,18 +26,16 @@ class Config(object):
         """
 
         if env == 'test':
-            self.test_conf()
-        elif env == 'ktv':
             self.ktv_conf()
-        elif env == 'jd':
-            self.jd_conf()
+        elif env == 'ktv':
+            self.test_conf()
         else:  # if env is None or env == 'dev':
             # debug mode
             self.debug = False
             # mysql config
-            self.mysql_user = 'yqc'
+            self.mysql_user = 'root'
             self.mysql_host = '127.0.0.1'
-            self.mysql_passwd = 'yqc2014'
+            self.mysql_passwd = 'lh'
             self.mysql_db = 'yiqiding_ktv'
             self.mysql_port = '3306'
             self.mysql_echo = True
@@ -46,30 +44,14 @@ class Config(object):
             self.redis_port = '6379'
             self.redis_passwd = ''
 
-    def jd_conf(self):
-        """"""
-        # debug mode
-        self.debug = False
-        # mysql config
-        self.mysql_user = 'yqc'
-        self.mysql_host = '127.0.0.1'
-        self.mysql_passwd = 'yqc2014'
-        self.mysql_db = 'yiqiding_ktv'
-        self.mysql_port = '3306'
-        self.mysql_echo = False
-        # redis config
-        self.redis_host = ''
-        self.redis_port = ''
-        self.redis_passwd = ''
-
     def test_conf(self):
         """"""
         # debug mode
         self.debug = False
         # mysql config
-        self.mysql_user = 'yqc'
-        self.mysql_host = '127.0.0.1'
-        self.mysql_passwd = 'yqc2014'
+        self.mysql_user = 'root'
+        self.mysql_host = '192.168.1.199'
+        self.mysql_passwd = 'lh'
         self.mysql_db = 'yiqiding_ktv'
         self.mysql_port = '3306'
         self.mysql_echo = False

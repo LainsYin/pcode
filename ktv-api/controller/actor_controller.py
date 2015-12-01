@@ -4,16 +4,17 @@
 Description
 """
 
-__author__ = 'TT'
+__author__ = 'yin'
 
 from base_controller import BaseController
-from models.media import Media
+from models.actor import Actor
 
 
-class MediaController(BaseController):
+class ActorController(BaseController):
     """"""
 
-    url = r'/media/?'
+    url = r'/actor/?'
+
     def get(self, *args, **kwargs):
         """
         下面调用post方法，意思就是http的get和post返回结果一致
@@ -21,24 +22,24 @@ class MediaController(BaseController):
         """
         try:
             serial_id_list = self.get_argument('serial_id_list', []).split(',')
-            print serial_id_list
-            res = self.query(Media).filter(Media.serial_id.in_(serial_id_list)).all()
-            self.do_write([self.pack_media_info(m) for m in res])
+            res = self.query(Actor).filter(Actor.serial_id.in_(serial_id_list)).all()
+            self.do_write([self.pack_info(ac) for ac in res])
         except Exception, e:
             self.do_write(status=False, error=('argument error.  %s' % e))
 
     def post(self, *args, **kwargs):
         """"""
-
+        # serial_id_list = self.get_argument('serial_id_list', []).split(',')
+        #
+        # res = self.query(Media).filter(Media.serial_id.in_(serial_id_list)).all()
+        # self.do_write([self.pack_media_info(m) for m in res])
         # TODO 这里还可以这么写，这样写就不用下面的function了
         # self.do_write([dict(mid=m.mid, serial_id_list=m.serial_id,  # ====许多信息
         #                     ) for m in res])
 
-    def pack_media_info(self, m):
+    def pack_info(self, actor):
         """
         在这里把所有需要返回的字段写入一个dict
         """
-        print m
-        return dict(mid=m.mid, serial_id=m.serial_id, name=m.name,
-                    language=m.language, type=m.type, singer=m.singer,
-                    header=m.header)
+        print actor
+        return dict(sid=actor.sid, serial_id=actor.serial_id, name=actor.name, pinyin=actor.pinyin)

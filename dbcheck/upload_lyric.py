@@ -62,20 +62,6 @@ def lyric():
                     ''''
                     文本前去空行
                     '''
-                    # while True:
-                    #     line_data = fp.readline()
-                    #     line_data = re.sub('\[(.*?)\]', '', line_data)
-                    #     if len(line_data) == len(os.linesep):
-                    #         pass
-                    #     else:
-                    #         data_all = fp.read()
-                    #         ly_text = line_data
-                    #         ly_text += data_all
-                    #         ly_text = re.sub('\[(.*?)\]', '', ly_text)
-                    #         ly_text = re.sub('\<(.*?)\>', '', ly_text)
-                    #         print ly_text
-                    #         break
-
                     while True:
                         line_data = fp.readline()
                         line_data = re.sub('\[(.*?)\]', '', line_data)
