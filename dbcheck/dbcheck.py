@@ -13,9 +13,10 @@ sys.setdefaultencoding("utf-8")
 
 
 class DbCheck:
-    def __init__(self, session_check, session, db, is_json=False):
+    def __init__(self, session_check, session, logger, db, is_json=False):
         self.session_check = session_check
         self.session = session
+        self.logger = logger
         self.db = db
         self.is_json = is_json
 
@@ -29,6 +30,8 @@ class DbCheck:
             return
 
         for fil in field_check:
+            self.logger.debug("         field : %s" % fil)
+            # self.logger.debug
             if len(fil) >= 1:
                 if fil not in field:
                     self.write_file(db_name=db, table_name=table, field_name=fil[0], err_str=" Field not exsitent ")
@@ -45,6 +48,7 @@ class DbCheck:
             return
 
         for tables in list_check:
+            self.logger.debug("     table : %s" % tables)
             if tables in list_dst:
                 self.compare_field(tables[0], db)
             else:
@@ -67,6 +71,7 @@ class DbCheck:
             return
 
         for data in database_list:
+            self.logger.debug("database : %s" % data)
             if data not in lists_check:
                 self.write_file(db_name=data, err_str=" Db not exsitent ")
             else:
@@ -91,7 +96,7 @@ class DbCheck:
 
 def init_log(log_name):
     logging.basicConfig(
-        level=logging.DEBUG,
+        level=logging.INFO,
         filename=log_name,
         filemode='w')
 
@@ -102,19 +107,19 @@ def init_log(log_name):
 
 def res_option():
     parser = OptionParser()
-    parser.add_option("--host", dest="host", default="192.168.1.233", help="specify standard db host")
-    parser.add_option("--port", dest="port", type="int", default=3306, help="specify standard db port")
-    parser.add_option("--user", dest="user", default="yqc", help="specify standard db user")
-    parser.add_option("--pwd", dest="password", default="yqc2014", help="specify standard db pwd")
+    parser.add_option("--host", dest="host", default="192.168.1.233", help="specify standard db host. default 192.168.1.233 ")
+    parser.add_option("--port", dest="port", type="int", default=3306, help="specify standard db port. default 3306")
+    parser.add_option("--user", dest="user", default="yqc", help="specify standard db user. default yqc")
+    parser.add_option("--pwd", dest="password", default="yqc2014", help="specify standard db pwd. default yqc2014")
 
-    parser.add_option("--chost", dest="chost", default="127.0.0.1", help="specify check db host")
-    parser.add_option("--cport", dest="cport", type="int", default=3306, help="specify check db port")
-    parser.add_option("--cuser", dest="cuser", default="sdfsf", help="specify check db user")
-    parser.add_option("--cpwd", dest="cpassword", default="yqc2014", help="specify check db pwd")
+    parser.add_option("--chost", dest="chost", default="127.0.0.1", help="specify check db host. default 127.0.0.1")
+    parser.add_option("--cport", dest="cport", type="int", default=3306, help="specify check db port. default 3306")
+    parser.add_option("--cuser", dest="cuser", default="yqc", help="specify check db user. default value yqc")
+    parser.add_option("--cpwd", dest="cpassword", default="yqc2014", help="specify check db pwd. default value yqc2014")
 
-    parser.add_option("-d", "--db", dest="db", default=None, help="specify check db")
-    parser.add_option("-l", "--log", dest="log_name", default="db.txt", help="log file name")
-    parser.add_option("-j", "--json", dest="json", default=False, help="output json  False/True")
+    parser.add_option("-d", "--db", dest="db", default=None, help="specify check db. default check all")
+    parser.add_option("-l", "--log", dest="log_name", default="db.txt", help="log file name. default db.txt")
+    parser.add_option("-j", "--json", dest="json", default=False, help="output json. default False")
 
     (options, args) = parser.parse_args()
     return options
@@ -123,6 +128,11 @@ def res_option():
 def main():
     opt = res_option()
     init_log(opt.log_name)
+    logger = logging.getLogger("log")
+    logger.setLevel(logging.DEBUG)
+    fp = logging.FileHandler("check.log")
+    logger.addHandler(fp)
+
     db_connect_check = 'mysql+mysqldb://%s:%s@%s:%s/yiqiding_ktv?charset=utf8' % \
                        (opt.cuser, opt.cpassword, opt.chost, opt.cport)
     db_connect = 'mysql+mysqldb://%s:%s@%s:%s/yiqiding_ktv?charset=utf8' % \
@@ -132,7 +142,7 @@ def main():
     engine_des = create_engine(db_connect)
     session_check = sessionmaker(bind=engine_check)
     session = sessionmaker(bind=engine_des)
-    db = DbCheck(session_check(), session(), opt.db, opt.json)
+    db = DbCheck(session_check(), session(), logger, opt.db, opt.json)
     db.compare_db()
 
 

@@ -18,13 +18,14 @@ sys.setdefaultencoding("utf-8")
 
 class ResCheck:
 
-    def __init__(self, host, user, pwd, port, db, filename, res_dir, write_json=False):
+    def __init__(self, host, user, pwd, port, db, filename, res_dir, logger, write_json=False):
         self.db_connect_str = 'mysql+mysqldb://%s:%s@%s:%s/%s?charset=utf8' % (user, pwd, host, port, db)
         self.engine = create_engine(self.db_connect_str)
         self.Session = sessionmaker(bind=self.engine)
         self.session = self.Session()
         self.root_path = res_dir
         self.file_name = filename
+        self.logger = logger
         self.write_json = write_json
 
     def write_to_file(self, err_lists, err_type):
@@ -54,7 +55,7 @@ class ResCheck:
                     logging.info(err_str)
 
     def get_file_list(self, dir_path, file_type):
-        self = dir_path + '/*' + file_type
+        dir_path = dir_path + '/*' + file_type
         file_list = glob.glob(dir_path)
         return file_list
 
@@ -62,9 +63,14 @@ class ResCheck:
         path_list = ('01', '02', '03', '04', '05', '06', '07', '08')
         for disk_dir in path_list:
             path_num = '/' + disk_dir + '/'
+            self.logger.debug("检测目录：%s " % path_num)
             query_str = 'SELECT  path, mid, serial_id, name FROM media WHERE path like ' + "\'" + path_num + '%' + "\'"
             mv_path = self.root_path + disk_dir
-            query_re = self.session.execute(query_str).fetchall()
+            try:
+                query_re = self.session.execute(query_str).fetchall()
+            except Exception, e:
+                logging.info(e)
+                return
             if len(query_re) < 1:
                 return
 
@@ -77,11 +83,13 @@ class ResCheck:
             error_jpg = []
             mp4_files = self.get_file_list(mv_path, '.mp4')
             jpg_files = self.get_file_list(mv_path, '.jpg')
+            self.logger.debug("     mp4文件数：%s " % len(mp4_files))
+            self.logger.debug("     mp4图片文件数：%s " % len(jpg_files))
             for each_path in lists:
                 each = each_path[0]
                 mp4_name = each.strip(path_num)
                 jpg_name = mp4_name.replace('.mp4', '_s.jpg')
-                print each
+                # print each
                 if mp4_name not in mp4_files:
                     error_mv.append(each_path)
 
@@ -94,9 +102,14 @@ class ResCheck:
                 self.write_to_file(error_jpg, 'mv jpg')
 
     def check_mv_lyric(self, rand_count=0):
-        path_lyric = self.root_path + 'lyrics'
+        path_lyric = self.root_path + '/lyrics'
+        self.logger.debug("mv歌词检测目录：%s " % path_lyric)
         query_str = 'SELECT  lyric, mid, serial_id, name FROM media WHERE lyric != \'NULL\''
-        query_re = self.session.execute(query_str).fetchall()
+        try:
+            query_re = self.session.execute(query_str).fetchall()
+        except Exception, e:
+            logging.info(e)
+            return
         if len(query_re) < 1:
             return
 
@@ -107,6 +120,7 @@ class ResCheck:
 
         err_lrc = []
         lyric_files = self.get_file_list(path_lyric, '.lrc')
+        self.logger.debug("     mv歌词文件数：%s " % len(lyric_files))
         for each_lyric in lists:
             print 'lyric : %s   mid : %s  name : %s ' % (each_lyric[0], each_lyric[1], each_lyric[3])
             if each_lyric[0] not in lyric_files:
@@ -116,9 +130,14 @@ class ResCheck:
             self.write_to_file(err_lrc, 'mv   lyric')
 
     def check_mp3_krc(self, rand_count=0):
-        path_p3_lyric = self.root_path + 'lyrics'
+        path_p3_lyric = self.root_path + '/lyrics'
+        self.logger.debug("mp3歌词检测目录：%s " % path_p3_lyric)
         query_str = 'SELECT lyric, mmid, serial_id, name FROM media_music '
-        query_re = self.session.execute(query_str).fetchall()
+        try:
+            query_re = self.session.execute(query_str).fetchall()
+        except Exception, e:
+            logging.info(e)
+            return
         if len(query_re) < 1:
             return
 
@@ -129,6 +148,7 @@ class ResCheck:
 
         err_krc = []
         lyric_files = self.get_file_list(path_p3_lyric, '.krc')
+        self.logger.debug("     mp3歌词文件数：%s " % len(lyric_files))
         for each_line in lists:
             print 'lyric : %s   mmid : %s  name : %s ' % (each_line[0], each_line[1], each_line[3])
             if each_line[0] not in lyric_files:
@@ -138,10 +158,14 @@ class ResCheck:
             self.write_to_file(err_krc, 'mp3   lyric')
 
     def check_mp3_video(self, rand_count=0):
-        path_p3_video = self.root_path + '09'
-
+        path_p3_video = self.root_path + '/09'
+        self.logger.debug("mp3视频检测目录：%s " % path_p3_video)
         query_str = 'SELECT path, mmid, serial_id, name FROM media_music '
-        query_re = self.session.execute(query_str).fetchall()
+        try:
+            query_re = self.session.execute(query_str).fetchall()
+        except Exception, e:
+            logging.info(e)
+            return
         if len(query_re) < 1:
             return
 
@@ -152,6 +176,7 @@ class ResCheck:
 
         err_video = []
         video_files = self.get_file_list(path_p3_video, '.mp4')
+        self.logger.debug("     mp3视频歌词文件数：%s " % len(video_files))
         for each_line in lists:
             print 'path : %s   mmid : %s  name : %s ' % (each_line[0], each_line[1], each_line[3])
             if each_line[0] not in video_files:
@@ -161,9 +186,14 @@ class ResCheck:
             self.write_to_file(err_video, 'mp3   mp4')
 
     def check_fm(self, rand_count=0):
-        path_fm = self.root_path + 'fm'
+        path_fm = self.root_path + '/fm'
+        self.logger.debug("fm检测目录：%s " % path_fm)
         query_str = 'SELECT lid, serial_id, title FROM songlist;'
-        query_re = self.session.execute(query_str).fetchall()
+        try:
+            query_re = self.session.execute(query_str).fetchall()
+        except Exception, e:
+            logging.info(e)
+            return
 
         err_fm = self.check_picture(query_re, path_fm, 2, rand_count)
         if len(err_fm) > 1:
@@ -171,9 +201,14 @@ class ResCheck:
             self.write_to_file(err_fm, 'fm')
 
     def check_actor(self, rand_count=0):
-        path_actor = self.root_path + 'avatar'
+        path_actor = self.root_path + '/avatar'
+        self.logger.debug("歌星头像检测目录：%s " % path_actor)
         query_str = 'SELECT sid, serial_id, name FROM actor;'
-        query_re = self.session.execute(query_str).fetchall()
+        try:
+            query_re = self.session.execute(query_str).fetchall()
+        except Exception, e:
+            logging.info(e)
+            return
 
         err_actor = self.check_picture(query_re, path_actor, 2, rand_count)
         if len(err_actor) > 1:
@@ -185,6 +220,7 @@ class ResCheck:
         err_list = []
         if len(sql_list) > 0:
             files = self.get_file_list(d_path, '.jpg')
+            self.logger.debug("     图片文件数：%d " % len(files))
 
             if rand_count > 0:
                 lists = self.rand_list(sql_list, rand_count)
@@ -240,7 +276,7 @@ class ResCheck:
 
 def init_log(log_name):
     logging.basicConfig(
-        level=logging.DEBUG,
+        level=logging.INFO,
         filename=log_name,
         filemode='w')
 
@@ -253,9 +289,9 @@ def res_option():
     parser = OptionParser()
     parser.add_option("--host", dest="host", default="192.168.1.199", help="specify db host")
     parser.add_option("--port", dest="port", type="int", default=3306, help="specify db port")
-    parser.add_option("--dir", dest="dir", default="/var/www/", help="res directory")
-    parser.add_option("-u", "--user", dest="user", default="yqc", help="specify db user")
-    parser.add_option("-p", "--pwd", dest="password", default="yqc2014", help="specify db user")
+    parser.add_option("--dir", dest="dir", default="/var/www", help="res directory")
+    parser.add_option("-u", "--user", dest="user", default="root", help="specify db user")
+    parser.add_option("-p", "--pwd", dest="password", default="lh", help="specify db user")
     parser.add_option("-d", "--db", dest="db", default="yiqiding_ktv", help="specify db database")
     parser.add_option("-l", "--log", dest="log_name", default="res.txt", help="log file name")
     parser.add_option("-j", "--json", dest="json",  default=False, help="output json  False/True")
@@ -280,8 +316,14 @@ if __name__ == '__main__':
 
     opt = res_option()
     init_log(opt.log_name)
+
+    logger = logging.getLogger("log")
+    logger.setLevel(logging.DEBUG)
+    fp = logging.FileHandler("check.log")
+    logger.addHandler(fp)
+
     nums = opt.max.split(",")
-    res = ResCheck(opt.host, opt.user, opt.password, opt.port, opt.db, opt.log_name, opt.dir, opt.json)
+    res = ResCheck(opt.host, opt.user, opt.password, opt.port, opt.db, opt.log_name, opt.dir, logger, opt.json)
     for obj in opt.type.split(","):
         if len(nums):
             check_num = int(nums[0])
